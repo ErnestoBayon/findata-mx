@@ -1,0 +1,331 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>FinData MX v2</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Syne:wght@400;600;700;800&display=swap');
+:root{--bg:#080b10;--bg2:#0e1219;--bg3:#141a24;--card:#10141d;--border:#1c2233;--border2:#252e42;--text:#cfd8ec;--muted:#4d5f7f;--dim:#2a3348;--green:#00e5a0;--blue:#3d9bff;--red:#ff5248;--amber:#f5a623;--purple:#a78bfa;--teal:#00d4c8;}
+*{margin:0;padding:0;box-sizing:border-box;}html{scroll-behavior:smooth;}
+body{background:var(--bg);color:var(--text);font-family:'Syne',sans-serif;min-height:100vh;}
+.header{display:flex;align-items:center;justify-content:space-between;padding:.75rem 1.75rem;border-bottom:1px solid var(--border);position:sticky;top:0;z-index:100;background:rgba(8,11,16,.95);backdrop-filter:blur(12px);}
+.logo{font-size:1rem;font-weight:800;letter-spacing:-.02em;display:flex;align-items:center;gap:.6rem;}
+.logo em{color:var(--green);font-style:normal;}
+.badge{font-family:'Space Mono',monospace;font-size:.58rem;padding:2px 7px;border-radius:3px;letter-spacing:.08em;background:rgba(0,229,160,.1);color:var(--green);border:1px solid rgba(0,229,160,.2);}
+.hnav{display:flex;gap:.25rem;}
+.nbtn{font-family:'Space Mono',monospace;font-size:.6rem;padding:4px 10px;border-radius:4px;border:1px solid var(--border);background:transparent;color:var(--muted);cursor:pointer;transition:all .15s;letter-spacing:.05em;}
+.nbtn:hover{background:rgba(0,229,160,.1);border-color:rgba(0,229,160,.3);color:var(--green);}
+.live{display:flex;align-items:center;gap:.4rem;font-family:'Space Mono',monospace;font-size:.6rem;color:var(--muted);}
+.dot{width:5px;height:5px;background:var(--green);border-radius:50%;animation:blink 2s infinite;}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:.2}}
+.hero{padding:1.75rem 1.75rem 1.25rem;border-bottom:1px solid var(--border);}
+.eyebrow{font-family:'Space Mono',monospace;font-size:.58rem;letter-spacing:.14em;color:var(--green);text-transform:uppercase;margin-bottom:.45rem;}
+.htitle{font-size:1.75rem;font-weight:800;letter-spacing:-.03em;line-height:1.1;margin-bottom:.3rem;}
+.htitle span{color:var(--muted);}
+.hsub{font-size:.75rem;color:var(--muted);max-width:500px;}
+main{padding:1.25rem 1.75rem 4rem;max-width:1360px;margin:0 auto;}
+.sec{display:flex;align-items:center;gap:.75rem;margin:1.5rem 0 .75rem;}
+.stag{font-family:'Space Mono',monospace;font-size:.55rem;letter-spacing:.12em;text-transform:uppercase;background:var(--bg3);border:1px solid var(--border);color:var(--muted);padding:3px 8px;border-radius:3px;white-space:nowrap;}
+.sline{flex:1;height:1px;background:var(--border);}
+.kstrip{display:grid;grid-template-columns:repeat(5,1fr);border:1px solid var(--border);border-radius:8px;overflow:hidden;background:var(--border);gap:1px;margin-bottom:1.1rem;}
+.kpi{background:var(--card);padding:.9rem 1rem;transition:background .15s;}
+.kpi:hover{background:var(--bg3);}
+.klbl{font-family:'Space Mono',monospace;font-size:.55rem;letter-spacing:.1em;color:var(--muted);text-transform:uppercase;margin-bottom:.4rem;}
+.kval{font-family:'Space Mono',monospace;font-size:1.45rem;font-weight:700;line-height:1;margin-bottom:.25rem;}
+.kfc{font-family:'Space Mono',monospace;font-size:.6rem;color:var(--purple);margin-bottom:.15rem;}
+.ksub{font-size:.58rem;color:var(--dim);}
+.g2{display:grid;grid-template-columns:1fr 1fr;gap:.9rem;margin-bottom:.9rem;}
+.g3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:.9rem;margin-bottom:.9rem;}
+.g21{display:grid;grid-template-columns:2fr 1fr;gap:.9rem;margin-bottom:.9rem;}
+.cc{background:var(--card);border:1px solid var(--border);border-radius:8px;padding:1rem;position:relative;overflow:hidden;}
+.cc::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;}
+.cg::before{background:var(--green);}.cb::before{background:var(--blue);}.cr::before{background:var(--red);}.ca::before{background:var(--amber);}.cp::before{background:var(--purple);}.ct::before{background:var(--teal);}
+.ch{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:.75rem;}
+.ctitle{font-size:.78rem;font-weight:700;margin-bottom:.15rem;}
+.csub{font-size:.58rem;color:var(--muted);}
+.pill{font-family:'Space Mono',monospace;font-size:.53rem;padding:2px 7px;border-radius:20px;}
+.pg{background:rgba(0,229,160,.1);color:var(--green);}.pb{background:rgba(61,155,255,.1);color:var(--blue);}.pr{background:rgba(255,82,72,.1);color:var(--red);}.pa{background:rgba(245,166,35,.1);color:var(--amber);}
+.fleg{display:flex;gap:.9rem;margin-bottom:.5rem;align-items:center;}
+.leg{display:flex;align-items:center;gap:.3rem;font-family:'Space Mono',monospace;font-size:.56rem;color:var(--muted);}
+.ll{width:14px;height:2px;border-radius:1px;}
+.tabs{display:flex;gap:0;border:1px solid var(--border);border-radius:4px;overflow:hidden;width:fit-content;}
+.tab{font-family:'Space Mono',monospace;font-size:.58rem;padding:4px 10px;cursor:pointer;border-right:1px solid var(--border);background:transparent;color:var(--muted);transition:all .12s;}
+.tab:last-child{border-right:none;}
+.tab.active{background:var(--green);color:#000;}
+.fc-chip{display:inline-flex;align-items:center;gap:.3rem;font-family:'Space Mono',monospace;font-size:.58rem;padding:2px 7px;border-radius:4px;margin-top:.45rem;}
+.fc-dn{background:rgba(0,229,160,.1);color:var(--green);}
+.fc-up{background:rgba(255,82,72,.1);color:var(--red);}
+.fc-nu{background:rgba(77,95,127,.15);color:var(--muted);}
+.mkt-t{width:100%;border-collapse:collapse;font-size:.7rem;}
+.mkt-t th{font-family:'Space Mono',monospace;font-size:.53rem;letter-spacing:.1em;color:var(--muted);text-transform:uppercase;text-align:left;padding:.4rem .55rem;border-bottom:1px solid var(--border);}
+.mkt-t td{padding:.5rem .55rem;border-bottom:1px solid rgba(28,34,51,.5);font-family:'Space Mono',monospace;font-size:.65rem;}
+.mkt-t tr:last-child td{border-bottom:none;}
+.bnm{font-family:'Syne',sans-serif;font-weight:600;font-size:.7rem;}
+.bm{height:4px;background:var(--bg3);border-radius:2px;margin-top:3px;overflow:hidden;}
+.bf{height:100%;border-radius:2px;}
+.db{font-family:'Space Mono',monospace;font-size:.56rem;padding:1px 5px;border-radius:3px;}
+.d-up{background:rgba(255,82,72,.1);color:var(--red);}.d-dn{background:rgba(0,229,160,.1);color:var(--green);}.d-nu{background:rgba(77,95,127,.15);color:var(--muted);}
+.insight{background:var(--bg3);border-radius:5px;padding:.65rem;margin-top:.65rem;font-size:.65rem;color:var(--muted);line-height:1.55;}
+.insight strong{color:var(--text);}
+.pred-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:.7rem;}
+.pred{background:var(--bg3);border-radius:6px;padding:.85rem;border-left:3px solid;}
+.pred.bull{border-color:var(--green);}.pred.bear{border-color:var(--red);}.pred.neu{border-color:var(--amber);}
+.ptag{font-family:'Space Mono',monospace;font-size:.53rem;letter-spacing:.1em;margin-bottom:.3rem;}
+.pred.bull .ptag{color:var(--green);}.pred.bear .ptag{color:var(--red);}.pred.neu .ptag{color:var(--amber);}
+.ptitle{font-size:.74rem;font-weight:700;margin-bottom:.25rem;}
+.ptext{font-size:.63rem;color:var(--muted);line-height:1.55;}
+.pstat{font-family:'Space Mono',monospace;font-size:.63rem;margin-top:.35rem;}
+footer{border-top:1px solid var(--border);padding:.9rem 1.75rem;display:flex;justify-content:space-between;align-items:center;margin-top:2rem;}
+footer p{font-size:.6rem;color:var(--muted);}
+.srcs{display:flex;gap:.35rem;}
+.src{font-family:'Space Mono',monospace;font-size:.53rem;color:var(--muted);border:1px solid var(--border);padding:2px 6px;border-radius:3px;}
+@media(max-width:900px){.kstrip{grid-template-columns:repeat(3,1fr);}.g2,.g21{grid-template-columns:1fr;}.g3,.pred-grid{grid-template-columns:1fr 1fr;}.hnav{display:none;}}
+/* ── estados de carga / error ── */
+#loadingState,#errorState{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:.75rem;padding:6rem 1.75rem;text-align:center;}
+#loadingState .spin{width:22px;height:22px;border:2px solid var(--border);border-top-color:var(--green);border-radius:50%;animation:spin 0.8s linear infinite;}
+@keyframes spin{to{transform:rotate(360deg);}}
+#errorState{color:var(--muted);}
+#errorState code{font-family:'Space Mono',monospace;background:var(--bg3);border:1px solid var(--border);padding:.5rem .75rem;border-radius:6px;color:var(--amber);display:inline-block;margin-top:.5rem;}
+#appRoot{display:none;}
+/* ── contenedores de altura fija para Chart.js (evita el resize-loop de responsive+maintainAspectRatio) ── */
+.chart-container{position:relative;width:100%;}
+.chart-container canvas{width:100% !important;height:100% !important;}
+</style>
+</head>
+<body>
+<div class="header">
+  <div style="display:flex;align-items:center;gap:.75rem;"><div class="logo">Fin<em>Data</em>&nbsp;MX</div><span class="badge" id="dataBadge">v2.1 · CARGANDO</span></div>
+  <div class="hnav">
+    <button class="nbtn" onclick="document.querySelector('#smacro').scrollIntoView({behavior:'smooth'})">Macro</button>
+    <button class="nbtn" onclick="document.querySelector('#sforecast').scrollIntoView({behavior:'smooth'})">Forecast</button>
+    <button class="nbtn" onclick="document.querySelector('#sbanca').scrollIntoView({behavior:'smooth'})">Banca</button>
+    <button class="nbtn" onclick="document.querySelector('#smercado').scrollIntoView({behavior:'smooth'})">Mercado</button>
+    <button class="nbtn" onclick="document.querySelector('#s2026').scrollIntoView({behavior:'smooth'})">2026</button>
+  </div>
+  <div class="live"><div class="dot"></div><span id="liveText">Cargando datos…</span></div>
+</div>
+<div class="hero">
+  <div class="eyebrow">Monitor Financiero México · Datos reales + Forecast</div>
+  <div class="htitle">Sistema financiero <span>en perspectiva</span></div>
+  <div class="hsub">Dashboard v2 — APIs públicas gratuitas (Banxico, INEGI, CNBV) + modelos ARIMA/ETS Ensemble para proyecciones con intervalos de confianza.</div>
+</div>
+
+<div id="loadingState">
+  <div class="spin"></div>
+  <div style="font-family:'Space Mono',monospace;font-size:.7rem;color:var(--muted);">Cargando data/macro_maestro.csv y data/forecast_output.json…</div>
+</div>
+
+<div id="errorState" style="display:none;">
+  <div style="font-size:1.1rem;font-weight:700;color:var(--text);">Sin datos</div>
+  <div style="font-size:.75rem;">No se encontraron los archivos de datos en <code>data/</code>.</div>
+  <code>python pipeline/api_connector.py &amp;&amp; python pipeline/forecast.py</code>
+  <div style="font-size:.62rem;max-width:480px;margin-top:.5rem;">
+    Si ya corriste el pipeline y sigues viendo este mensaje: abrir <code>index.html</code>
+    directamente con doble-click (protocolo <code>file://</code>) bloquea <code>fetch()</code> en la mayoría
+    de navegadores. Sirve la carpeta con <code>python -m http.server</code> desde la raíz del proyecto
+    y abre <code>http://localhost:8000/dashboard/</code>.
+  </div>
+</div>
+
+<div id="appRoot">
+<main>
+<div class="sec" id="smacro"><span class="stag">Indicadores clave · <span id="tagFecha">—</span></span><div class="sline"></div></div>
+<div class="kstrip" id="kstrip"></div>
+<div class="g21">
+  <div class="cc cr">
+    <div class="ch"><div><div class="ctitle">Tasa de Fondeo Banxico</div><div class="csub">Histórico + Forecast 12m · IC 95%</div></div><span class="pill pr">Política monetaria</span></div>
+    <div class="fleg"><div class="leg"><div class="ll" style="background:var(--red)"></div>Histórico</div><div class="leg"><div class="ll" style="background:var(--amber)"></div>Proyección</div><div class="leg"><div class="ll" style="background:rgba(245,166,35,.2);height:8px;width:14px;border-radius:2px;"></div>IC 95%</div></div>
+    <div class="chart-container" style="height:160px;"><canvas id="cTasa"></canvas></div><div id="chTasa"></div>
+  </div>
+  <div class="cc cb">
+    <div class="ch"><div><div class="ctitle">Tipo de Cambio FIX</div><div class="csub">MXN/USD + Forecast 12m</div></div><span class="pill pb">Banxico</span></div>
+    <div class="chart-container" style="height:160px;"><canvas id="cTC"></canvas></div><div id="chTC"></div>
+  </div>
+</div>
+<div class="g3">
+  <div class="cc ca"><div class="ch"><div><div class="ctitle">Inflación INPC</div><div class="csub">% anual + Forecast 12m</div></div><span class="pill pa">Banxico</span></div><div class="chart-container" style="height:165px;"><canvas id="cInf"></canvas></div><div id="chInf"></div></div>
+  <div class="cc cg"><div class="ch"><div><div class="ctitle">Crédito Pyme</div><div class="csub">Mmn MXN + Forecast 12m</div></div><span class="pill pg">CNBV</span></div><div class="chart-container" style="height:165px;"><canvas id="cPyme"></canvas></div><div id="chPyme"></div></div>
+  <div class="cc ct"><div class="ch"><div><div class="ctitle">Crédito al Consumo</div><div class="csub">Mmn MXN + Forecast 12m</div></div><span class="pill pg">CNBV</span></div><div class="chart-container" style="height:165px;"><canvas id="cConsumo"></canvas></div><div id="chConsumo"></div></div>
+</div>
+<div class="sec" id="sforecast"><span class="stag">Proyecciones · Modelos ARIMA + ETS Ensemble · IC 95%</span><div class="sline"></div></div>
+<div class="g2">
+  <div class="cc ca"><div class="ch"><div><div class="ctitle">Captación Bancaria</div><div class="csub">Mmn MXN · histórico + proyección 12m</div></div><span class="pill pb">CNBV</span></div><div class="chart-container" style="height:180px;"><canvas id="cCapt"></canvas></div><div id="chCapt"></div></div>
+  <div class="cc cb"><div class="ch"><div><div class="ctitle">Resumen de proyecciones</div><div class="csub">Modelo ARIMA + ETS Ensemble · 12 meses adelante</div></div></div><div id="fcSum"></div></div>
+</div>
+<div class="sec" id="sbanca"><span class="stag">Sistema bancario · CAT y comisiones (referencia ilustrativa)</span><div class="sline"></div></div>
+<div class="g2">
+  <div class="cc cr">
+    <div class="ch"><div><div class="ctitle">CAT por segmento de tarjeta</div><div class="csub">Evolución 2016–2025 · % anual</div></div>
+    <div class="tabs" id="catTabs"><div class="tab active" onclick="switchCat('cat')">CAT</div><div class="tab" onclick="switchCat('an')">Anualidad</div></div></div>
+    <div class="chart-container" style="height:190px;"><canvas id="cCAT"></canvas></div>
+  </div>
+  <div class="cc cb">
+    <div class="ch"><div><div class="ctitle">Comisiones vs Ingresos por Intereses</div><div class="csub">Composición del ingreso bancario por tarjeta</div></div></div>
+    <div class="chart-container" style="height:190px;"><canvas id="cCom"></canvas></div>
+    <div class="insight"><strong>Los neobancos cambiaron el modelo.</strong> Nu y Ualá eliminaron anualidades en básico, forzando a la banca tradicional a reducirlas: 90% → 60%. Los bancos compensan con más ingresos por intereses: +91% en 10 años.</div>
+  </div>
+</div>
+<div class="sec" id="smercado"><span class="stag">Market share · Crédito al consumo (referencia ilustrativa)</span><div class="sline"></div></div>
+<div class="g21">
+  <div class="cc cb"><div class="ch"><div><div class="ctitle">Participación por banco 2022–2025</div><div class="csub">% cartera total · crédito al consumo</div></div><span class="pill pb">CNBV</span></div><div class="chart-container" style="height:205px;"><canvas id="cMkt"></canvas></div></div>
+  <div class="cc cp">
+    <div class="ch"><div><div class="ctitle">Movimientos de share</div><div class="csub">Delta en pp vs año anterior</div></div>
+    <div class="tabs" id="mktTabs"><div class="tab" onclick="swMkt(2022)">22</div><div class="tab" onclick="swMkt(2023)">23</div><div class="tab" onclick="swMkt(2024)">24</div><div class="tab active" onclick="swMkt(2025)">25</div></div></div>
+    <div id="mktT"></div>
+  </div>
+</div>
+<div class="sec" id="s2026"><span class="stag">Notas del pipeline</span><div class="sline"></div></div>
+<div class="pred-grid" id="notesGrid"></div>
+</main>
+<footer>
+  <p id="footerNote">© 2026 FinData MX · datos vía Banxico / INEGI / CNBV · ARIMA + ETS Ensemble</p>
+  <div class="srcs"><span class="src">Banxico SIE</span><span class="src">INEGI</span><span class="src">CNBV</span><span class="src">ARIMA+ETS</span></div>
+</footer>
+</div>
+
+<script>
+// ── carga de datos reales (no hardcodeados) ─────────────────────────────────
+const DATA_URLS = { maestro: '../data/macro_maestro.csv', forecast: '../data/forecast_output.json' };
+
+function parseCSV(text) {
+  const lines = text.trim().split('\n').filter(Boolean);
+  const headers = lines[0].split(',');
+  const rows = lines.slice(1).map(line => {
+    const cells = line.split(',');
+    const row = {};
+    headers.forEach((h, i) => row[h] = cells[i]);
+    return row;
+  });
+  return { headers, rows };
+}
+
+async function loadData() {
+  const [maestroRes, forecastRes] = await Promise.all([
+    fetch(DATA_URLS.maestro),
+    fetch(DATA_URLS.forecast),
+  ]);
+  if (!maestroRes.ok || !forecastRes.ok) throw new Error('archivos de datos no encontrados');
+  const maestroText = await maestroRes.text();
+  const forecastJson = await forecastRes.json();
+  const { rows } = parseCSV(maestroText);
+  const ultimaFecha = rows.length ? rows[rows.length - 1].fecha : null;
+  return { maestroRows: rows, forecast: forecastJson, ultimaFecha };
+}
+
+const MKT = { banco: ["BBVA", "Banamex", "Banorte", "Santander", "HSBC", "Nu", "Otros"], mkt_2022: [30.1, 18.4, 16.2, 10.5, 6.8, 1.2, 16.8], mkt_2023: [29.8, 17.9, 15.8, 10.3, 6.5, 3.1, 16.6], mkt_2024: [29.2, 18.1, 15.4, 10.0, 6.2, 5.4, 15.7], mkt_2025: [28.7, 18.8, 15.1, 9.7, 5.9, 7.2, 14.6] };
+const bkc = { BBVA: '#3d9bff', Banamex: '#00e5a0', Banorte: '#f5a623', Santander: '#ff5248', HSBC: '#4d5f7f', Nu: '#a78bfa', Otros: '#2a3348' };
+const CAT = { y: [2016, 2017, 2018, 2019, 2020, 2021, 2022, 2023, 2024, 2025], cc: [54, 55, 55, 56, 57, 61, 70, 74, 71, 75], co: [57.6, 58, 59, 61, 63, 72, 84, 90, 88, 86.8], cp: [26.8, 27, 28, 29, 31, 36, 41, 48, 47, 45.1], ac: [90, 88, 82, 78, 73, 69, 65, 63, 62, 60], ao: [92, 91, 89, 87, 84, 80, 77, 74, 72, 70], ap: [99, 99, 98, 99, 98, 99, 99, 99, 99, 99] };
+
+Chart.defaults.color = '#4d5f7f'; Chart.defaults.borderColor = '#1c2233'; Chart.defaults.font.family = "'Space Mono',monospace"; Chart.defaults.font.size = 9;
+const G = '#00e5a0', B = '#3d9bff', R = '#ff5248', A = '#f5a623', P = '#a78bfa', T = '#00d4c8';
+function gr(ctx, c, h = 180) { const g = ctx.createLinearGradient(0, 0, 0, h); g.addColorStop(0, c + '3a'); g.addColorStop(1, c + '00'); return g; }
+const bo = { responsive: true, maintainAspectRatio: false, interaction: { mode: 'index', intersect: false }, plugins: { legend: { display: false }, tooltip: { backgroundColor: '#141a24', borderColor: '#252e42', borderWidth: 1, titleColor: '#cfd8ec', bodyColor: '#4d5f7f', padding: 8, titleFont: { family: "'Syne',sans-serif", weight: '700', size: 10 } } }, scales: { x: { grid: { color: '#1c2233', drawTicks: false }, ticks: { maxTicksLimit: 7, color: '#4d5f7f', font: { size: 8 } } }, y: { grid: { color: '#1c2233', drawTicks: false }, ticks: { color: '#4d5f7f', font: { size: 8 } } } } };
+
+// ── construye un chart de histórico+forecast directo de forecast_output.json ─
+function buildFC(cid, series, color, fmt, h) {
+  const hist = series.history, fc = series.forecast;
+  const all = [...hist.dates, ...fc.dates];
+  const hLen = hist.dates.length;
+  const fcFull = [...Array(hLen - 1).fill(null), hist.values[hLen - 1], ...fc.mean];
+  const loFull = [...Array(hLen - 1).fill(null), hist.values[hLen - 1], ...fc.ci95_lo];
+  const hiFull = [...Array(hLen - 1).fill(null), hist.values[hLen - 1], ...fc.ci95_hi];
+  const ctx = document.getElementById(cid).getContext('2d');
+  new Chart(ctx, {
+    type: 'line', data: {
+      labels: all, datasets: [
+        { data: hiFull, borderColor: 'transparent', backgroundColor: A + '22', pointRadius: 0, fill: '+1', tension: .3, order: 3 },
+        { data: loFull, borderColor: 'transparent', backgroundColor: 'transparent', pointRadius: 0, fill: false, tension: .3, order: 4 },
+        { data: [...hist.values, ...Array(fc.dates.length).fill(null)], borderColor: color, backgroundColor: gr(ctx, color, h), borderWidth: 2.5, pointRadius: 0, fill: true, tension: .3, order: 1 },
+        { data: fcFull, borderColor: A, backgroundColor: 'transparent', borderWidth: 2, borderDash: [5, 4], pointRadius: 0, fill: false, tension: .3, order: 2 },
+      ]
+    }, options: { ...bo, scales: { ...bo.scales, y: { ...bo.scales.y, ticks: { callback: v => fmt(v), color: '#4d5f7f', font: { size: 8 } } } } }
+  });
+  const lastVal = fc.mean[fc.mean.length - 1];
+  const firstVal = hist.values[hLen - 1];
+  const delta = lastVal - firstVal;
+  const chip = document.getElementById('ch' + cid.replace('c', '').replace(/^./, s => s.toUpperCase()));
+  if (chip) {
+    const cls = delta < -.05 ? 'fc-dn' : delta > .05 ? 'fc-up' : 'fc-nu', ar = delta < 0 ? '▼' : delta > 0 ? '▲' : '—', sg = delta >= 0 ? '+' : '';
+    chip.innerHTML = `<span class="fc-chip ${cls}">${ar} Forecast ${fc.dates[fc.dates.length - 1]}: ${fmt(lastVal)} (${sg}${delta.toFixed(2)})</span>`;
+  }
+}
+
+const pct = v => v === null ? null : v.toFixed(2) + '%';
+const usd = v => v === null ? null : '$' + v.toFixed(2);
+const mmn = v => v === null ? null : '$' + Math.round(v).toLocaleString() + 'M';
+
+const SERIES_CFG = [
+  { key: 'Tasa de Fondeo (%)', cid: 'cTasa', color: R, fmt: pct, h: 160, klbl: 'Tasa Fondeo' },
+  { key: 'Tipo de Cambio FIX', cid: 'cTC', color: B, fmt: usd, h: 160, klbl: 'Tipo Cambio' },
+  { key: 'Inflación INPC (%)', cid: 'cInf', color: A, fmt: pct, h: 165, klbl: 'Inflación INPC' },
+  { key: 'Crédito Pyme (Mmn MXN)', cid: 'cPyme', color: G, fmt: mmn, h: 165, klbl: 'Créd. Pyme' },
+  { key: 'Crédito Consumo (Mmn MXN)', cid: 'cConsumo', color: T, fmt: mmn, h: 165, klbl: 'Créd. Consumo' },
+  { key: 'Captación Bancaria (Mmn)', cid: 'cCapt', color: B, fmt: mmn, h: 180, klbl: 'Captación' },
+];
+
+function renderApp({ forecast, ultimaFecha }) {
+  document.getElementById('liveText').textContent = `Datos al ${ultimaFecha || '—'} · Banxico · INEGI · CNBV`;
+  document.getElementById('tagFecha').textContent = ultimaFecha || '—';
+  document.getElementById('dataBadge').textContent = 'v2.1 · DATOS REALES';
+
+  // kstrip
+  document.getElementById('kstrip').innerHTML = SERIES_CFG.map(cfg => {
+    const s = forecast[cfg.key];
+    if (!s) return `<div class="kpi"><div class="klbl">${cfg.klbl}</div><div class="kval">—</div><div class="ksub">sin datos</div></div>`;
+    const last = s.history.values[s.history.values.length - 1];
+    const fcEnd = s.forecast.mean[s.forecast.mean.length - 1];
+    return `<div class="kpi"><div class="klbl">${cfg.klbl}</div><div class="kval">${cfg.fmt(last)}</div><div class="kfc">◆ ${cfg.fmt(fcEnd)} · ${s.forecast.dates[s.forecast.dates.length - 1]}</div><div class="ksub">${s.meta.n_obs} obs · ARIMA${JSON.stringify(s.meta.arima_order)}</div></div>`;
+  }).join('');
+
+  // charts
+  SERIES_CFG.forEach(cfg => {
+    const s = forecast[cfg.key];
+    if (s) buildFC(cfg.cid, s, cfg.color, cfg.fmt, cfg.h);
+  });
+
+  // resumen de proyecciones
+  document.getElementById('fcSum').innerHTML = SERIES_CFG.map(cfg => {
+    const s = forecast[cfg.key];
+    if (!s) return '';
+    const last = s.history.values[s.history.values.length - 1];
+    const fcEnd = s.forecast.mean[s.forecast.mean.length - 1];
+    const delta = fcEnd - last;
+    const cls = delta < -.05 ? 'style="color:var(--green)"' : delta > .05 ? 'style="color:var(--red)"' : 'style="color:var(--muted)"';
+    const ar = delta < 0 ? '▼' : delta > 0 ? '▲' : '—', sg = delta >= 0 ? '+' : '';
+    return `<div style="display:flex;justify-content:space-between;align-items:center;padding:.4rem 0;border-bottom:1px solid var(--border);"><div><div style="font-size:.68rem;font-weight:600;">${cfg.key}</div><div style="font-family:'Space Mono',monospace;font-size:.56rem;color:var(--muted);">Actual: ${cfg.fmt(last)}</div></div><div style="text-align:right;"><div style="font-family:'Space Mono',monospace;font-size:.75rem;font-weight:700;">${cfg.fmt(fcEnd)}</div><div ${cls} style="font-family:'Space Mono',monospace;font-size:.58rem;">${ar} ${sg}${delta.toFixed(2)}</div></div></div>`;
+  }).join('') + `<div style="font-size:.58rem;color:var(--muted);margin-top:.5rem;">Modelo ARIMA + ETS Ensemble · IC 95% · datos: data/forecast_output.json</div>`;
+
+  document.getElementById('notesGrid').innerHTML = `
+    <div class="pred neu"><div class="ptag">◆ PIPELINE</div><div class="ptitle">Datos vivos vía api_connector.py</div><div class="ptext">Los charts arriba se generan 100% de <code>data/macro_maestro.csv</code> y <code>data/forecast_output.json</code>. Corre <code>python pipeline/api_connector.py &amp;&amp; python pipeline/forecast.py</code> para refrescar.</div></div>
+    <div class="pred neu"><div class="ptag">◆ BANCA / MERCADO</div><div class="ptitle">Secciones de referencia</div><div class="ptext">Las secciones "Sistema bancario" y "Market share" abajo usan datos ilustrativos fijos — no vienen del pipeline. Se conectarán cuando el parser real de CNBV esté disponible.</div></div>
+    <div class="pred neu"><div class="ptag">◆ PRÓXIMO PASO</div><div class="ptitle">DataMéxico + CNBV boletín</div><div class="ptext">IGAE/empleo (DataMéxico) y el boletín de CNBV siguen pendientes de verificar su endpoint real — ver comentarios en <code>pipeline/api_connector.py</code> y <code>pipeline/cnbv_parser.py</code>.</div></div>`;
+
+  buildCAT('cat');
+  const ctx2 = document.getElementById('cCom').getContext('2d');
+  new Chart(ctx2, { type: 'bar', data: { labels: ['2016', '2017', '2018', '2019', '2020', '2021', '2022', '2023', '2024', '2025'], datasets: [{ label: '% Comisiones (eje izq)', data: [16.9, 16.2, 15.5, 14.8, 13.2, 12.1, 11.5, 11.0, 10.7, 10.5], backgroundColor: R + '88', borderRadius: 3, yAxisID: 'y' }, { label: 'Ing. Intereses $B MXN', data: [85, 92, 101, 108, 112, 124, 138, 148, 155, 162], backgroundColor: G + '66', borderRadius: 3, yAxisID: 'y2' }] }, options: { ...bo, plugins: { ...bo.plugins, legend: { display: true, labels: { color: '#4d5f7f', boxWidth: 10, padding: 8, font: { size: 8 } } } }, scales: { x: bo.scales.x, y: { ...bo.scales.y, position: 'left', ticks: { callback: v => v + '%', color: '#4d5f7f', font: { size: 8 } }, max: 22 }, y2: { ...bo.scales.y, position: 'right', grid: { drawOnChartArea: false }, ticks: { callback: v => '$' + v + 'B', color: '#4d5f7f', font: { size: 8 } } } } } });
+  const ctx3 = document.getElementById('cMkt').getContext('2d');
+  new Chart(ctx3, { type: 'bar', data: { labels: MKT.banco, datasets: [{ label: '2022', data: MKT.mkt_2022, backgroundColor: '#1c2233', borderRadius: 3 }, { label: '2024', data: MKT.mkt_2024, backgroundColor: '#252e42', borderRadius: 3 }, { label: '2025', data: MKT.mkt_2025, backgroundColor: MKT.banco.map(b => bkc[b] || G), borderRadius: 3 }] }, options: { ...bo, plugins: { ...bo.plugins, legend: { display: true, labels: { color: '#4d5f7f', boxWidth: 10, padding: 8, font: { size: 8 } } } }, scales: { ...bo.scales, y: { ...bo.scales.y, ticks: { callback: v => v + '%', color: '#4d5f7f', font: { size: 8 } }, max: 35 } } } });
+  swMkt(2025);
+}
+
+let catCh;
+function buildCAT(v) { if (catCh) catCh.destroy(); const ctx = document.getElementById('cCAT').getContext('2d'); const isC = v === 'cat'; catCh = new Chart(ctx, { type: 'line', data: { labels: CAT.y, datasets: isC ? [{ label: 'Clásica', data: CAT.cc, borderColor: G, borderWidth: 2, pointRadius: 3, tension: .3, fill: false }, { label: 'Oro', data: CAT.co, borderColor: A, borderWidth: 2, pointRadius: 3, tension: .3, fill: false }, { label: 'Platino', data: CAT.cp, borderColor: B, borderWidth: 2, pointRadius: 3, tension: .3, fill: false }] : [{ label: 'Clásica', data: CAT.ac, borderColor: G, borderWidth: 2, pointRadius: 3, tension: .3, fill: false }, { label: 'Oro', data: CAT.ao, borderColor: A, borderWidth: 2, pointRadius: 3, tension: .3, fill: false }, { label: 'Platino', data: CAT.ap, borderColor: B, borderWidth: 2, pointRadius: 3, tension: .3, fill: false }] }, options: { ...bo, plugins: { ...bo.plugins, legend: { display: true, labels: { color: '#4d5f7f', boxWidth: 10, padding: 8, font: { size: 8 } } } }, scales: { ...bo.scales, y: { ...bo.scales.y, ticks: { callback: v => v + '%', color: '#4d5f7f', font: { size: 8 } } } } } }) }
+function switchCat(v) { document.querySelectorAll('#catTabs .tab').forEach((t, i) => t.classList.toggle('active', (v === 'cat' && i === 0) || (v === 'an' && i === 1))); buildCAT(v); }
+function swMkt(yr) { document.querySelectorAll('#mktTabs .tab').forEach(t => t.classList.toggle('active', t.textContent == yr)); const col = 'mkt_' + yr, prev = 'mkt_' + (yr - 1), hp = yr > 2022; const rows = MKT.banco.map((b, i) => ({ b, val: MKT[col][i], d: hp ? MKT[col][i] - MKT[prev][i] : null })).sort((a, z) => z.val - a.val); const mx = Math.max(...rows.map(r => r.val)); document.getElementById('mktT').innerHTML = '<table class="mkt-t"><thead><tr><th>Banco</th><th>' + yr + '</th>' + (hp ? '<th>Delta</th>' : '') + '<th>Share</th></tr></thead><tbody>' + rows.map(r => { const dc = r.d === null ? '' : r.d > 0 ? 'd-up' : r.d < 0 ? 'd-dn' : 'd-nu', ds = r.d !== null ? (r.d >= 0 ? '+' : '') + r.d.toFixed(1) : ''; return `<tr><td><span class="bnm">${r.b}</span></td><td>${r.val.toFixed(1)}%</td>${hp ? `<td><span class="db ${dc}">${ds}</span></td>` : ''}<td style="min-width:70px"><div class="bm"><div class="bf" style="width:${(r.val / mx * 100).toFixed(0)}%;background:${bkc[r.b] || G}"></div></div></td></tr>`; }).join('') + '</tbody></table>'; }
+
+// ── arranque ─────────────────────────────────────────────────────────────────
+loadData().then(data => {
+  document.getElementById('loadingState').style.display = 'none';
+  document.getElementById('appRoot').style.display = 'block';
+  renderApp(data);
+}).catch(err => {
+  console.error('FinData MX — error cargando datos:', err);
+  document.getElementById('loadingState').style.display = 'none';
+  document.getElementById('errorState').style.display = 'flex';
+  document.getElementById('liveText').textContent = 'Sin datos';
+});
+</script>
+</body>
+</html>

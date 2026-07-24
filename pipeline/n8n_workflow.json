@@ -1,0 +1,282 @@
+{
+  "name": "FinData MX — Actualización Mensual",
+  "nodes": [
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "cronExpression",
+              "expression": "0 8 1 * *"
+            }
+          ]
+        },
+        "timezone": "America/Mexico_City"
+      },
+      "id": "schedule-trigger",
+      "name": "Schedule",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [0, 0]
+    },
+    {
+      "parameters": {
+        "method": "GET",
+        "url": "https://www.banxico.org.mx/SieAPIRest/service/v1/series/SF61745,SF17908,SP1,SG1/datos/oportuno",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Bmx-Token",
+              "value": "={{ $env.BANXICO_TOKEN }}"
+            }
+          ]
+        },
+        "options": {
+          "timeout": 20000
+        }
+      },
+      "id": "http-banxico",
+      "name": "HTTP Banxico",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [220, -120],
+      "continueOnFail": true
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict"
+          },
+          "conditions": [
+            {
+              "id": "cond-banxico-status",
+              "leftValue": "={{ $json.statusCode }}",
+              "rightValue": 200,
+              "operator": {
+                "type": "number",
+                "operation": "notEquals"
+              }
+            }
+          ],
+          "combinator": "and"
+        }
+      },
+      "id": "if-banxico-error",
+      "name": "If Banxico falló",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [440, -120]
+    },
+    {
+      "parameters": {
+        "method": "GET",
+        "url": "REEMPLAZA_CON_URL_REAL_DATAMEXICO",
+        "options": {
+          "timeout": 20000
+        },
+        "qs": {
+          "parameters": [
+            { "name": "cube", "value": "inegi_igae" },
+            { "name": "drilldowns", "value": "Month" },
+            { "name": "measures", "value": "Value" }
+          ]
+        }
+      },
+      "id": "http-datamexico",
+      "name": "HTTP DataMéxico (IGAE + IMSS)",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [220, 0],
+      "continueOnFail": true,
+      "notes": "URL pendiente de verificar — api.datamexico.org no resuelve al momento de crear este workflow. Ver README."
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict"
+          },
+          "conditions": [
+            {
+              "id": "cond-datamexico-status",
+              "leftValue": "={{ $json.statusCode }}",
+              "rightValue": 200,
+              "operator": {
+                "type": "number",
+                "operation": "notEquals"
+              }
+            }
+          ],
+          "combinator": "and"
+        }
+      },
+      "id": "if-datamexico-error",
+      "name": "If DataMéxico falló",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [440, 0]
+    },
+    {
+      "parameters": {
+        "method": "GET",
+        "url": "=https://www.cnbv.gob.mx/SECTORES-SUPERVISADOS/BANCA-MULTIPLE/Boletines/Boletin{{ $now.format('MMyyyy') }}.xlsx",
+        "options": {
+          "timeout": 30000,
+          "response": {
+            "response": {
+              "responseFormat": "file"
+            }
+          }
+        }
+      },
+      "id": "http-cnbv",
+      "name": "HTTP CNBV (boletín mensual)",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [220, 120],
+      "continueOnFail": true
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict"
+          },
+          "conditions": [
+            {
+              "id": "cond-cnbv-status",
+              "leftValue": "={{ $json.statusCode }}",
+              "rightValue": 200,
+              "operator": {
+                "type": "number",
+                "operation": "notEquals"
+              }
+            }
+          ],
+          "combinator": "and"
+        }
+      },
+      "id": "if-cnbv-error",
+      "name": "If CNBV falló",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [440, 120]
+    },
+    {
+      "parameters": {
+        "jsCode": "// Toma la salida de los 3 HTTP nodes (vía $items), parsea y escribe los CSVs en /data.\n// n8n corre en su propio contenedor: monta el volumen del repo en /data para que\n// esto termine escribiendo en la misma carpeta que usa forecast.py.\nconst fs = require('fs');\nconst path = '/data';\n\nconst banxico = $input.first().json;\n// TODO: mapear la respuesta real de Banxico a filas {fecha, tasa_fondeo, tipo_cambio_fix, ipc_indice, reservas_int}\n// y escribir path + '/banxico_macro.csv'\n\nreturn [{ json: { status: 'merge ejecutado', timestamp: new Date().toISOString() } }];"
+      },
+      "id": "code-merge",
+      "name": "Code — Parse + Merge CSVs",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [660, 0]
+    },
+    {
+      "parameters": {
+        "command": "python pipeline/forecast.py",
+        "workingDirectory": "/data/.."
+      },
+      "id": "execute-forecast",
+      "name": "Execute forecast.py",
+      "type": "n8n-nodes-base.executeCommand",
+      "typeVersion": 1,
+      "position": [880, 0]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $env.WEBHOOK_CONFIRMACION_URL }}",
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            { "name": "status", "value": "ok" },
+            { "name": "timestamp", "value": "={{ $now.toISO() }}" }
+          ]
+        },
+        "options": { "timeout": 10000 }
+      },
+      "id": "http-webhook-confirmacion",
+      "name": "POST Webhook confirmación",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [1100, 0]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $env.SLACK_WEBHOOK_URL }}",
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "text",
+              "value": "=🚨 FinData MX — falló una fuente de datos: {{ $json.error?.message || 'ver logs de n8n' }}"
+            }
+          ]
+        },
+        "options": { "timeout": 10000 }
+      },
+      "id": "http-alerta-error",
+      "name": "POST Slack/Email — Error",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [660, 260]
+    }
+  ],
+  "connections": {
+    "Schedule": {
+      "main": [
+        [
+          { "node": "HTTP Banxico", "type": "main", "index": 0 },
+          { "node": "HTTP DataMéxico (IGAE + IMSS)", "type": "main", "index": 0 },
+          { "node": "HTTP CNBV (boletín mensual)", "type": "main", "index": 0 }
+        ]
+      ]
+    },
+    "HTTP Banxico": {
+      "main": [[{ "node": "If Banxico falló", "type": "main", "index": 0 }]]
+    },
+    "If Banxico falló": {
+      "main": [
+        [{ "node": "POST Slack/Email — Error", "type": "main", "index": 0 }],
+        [{ "node": "Code — Parse + Merge CSVs", "type": "main", "index": 0 }]
+      ]
+    },
+    "HTTP DataMéxico (IGAE + IMSS)": {
+      "main": [[{ "node": "If DataMéxico falló", "type": "main", "index": 0 }]]
+    },
+    "If DataMéxico falló": {
+      "main": [
+        [{ "node": "POST Slack/Email — Error", "type": "main", "index": 0 }],
+        [{ "node": "Code — Parse + Merge CSVs", "type": "main", "index": 0 }]
+      ]
+    },
+    "HTTP CNBV (boletín mensual)": {
+      "main": [[{ "node": "If CNBV falló", "type": "main", "index": 0 }]]
+    },
+    "If CNBV falló": {
+      "main": [
+        [{ "node": "POST Slack/Email — Error", "type": "main", "index": 0 }],
+        [{ "node": "Code — Parse + Merge CSVs", "type": "main", "index": 0 }]
+      ]
+    },
+    "Code — Parse + Merge CSVs": {
+      "main": [[{ "node": "Execute forecast.py", "type": "main", "index": 0 }]]
+    },
+    "Execute forecast.py": {
+      "main": [[{ "node": "POST Webhook confirmación", "type": "main", "index": 0 }]]
+    }
+  },
+  "meta": {
+    "notes": "Importar en n8n (Workflows → Import from File). Configurar variables de entorno BANXICO_TOKEN, WEBHOOK_CONFIRMACION_URL y SLACK_WEBHOOK_URL en el contenedor de n8n. El nodo 'HTTP DataMéxico' tiene una URL placeholder — ver README, sección INEGI/DataMéxico, antes de activar este workflow en producción. El nodo Code asume que n8n monta el repo en /data; ajusta la ruta si tu instalación es distinta."
+  }
+}
